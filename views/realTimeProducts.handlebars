@@ -1,0 +1,39 @@
+<form id="productForm">
+    <input type="text" id="productName" placeholder="Nombre del producto" required>
+    <button type="submit">Agregar Producto</button>
+</form>
+
+<ul id="productList"></ul>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+
+    // Escuchar actualizaciones de productos
+    socket.on('updateProducts', (products) => {
+        const productList = document.getElementById('productList');
+        productList.innerHTML = '';
+        products.forEach((product, index) => {
+            const li = document.createElement('li');
+            li.textContent = product;
+
+            // Botón de eliminación
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Eliminar';
+            deleteButton.onclick = () => {
+                socket.emit('deleteProduct', index); // Enviar índice del producto a eliminar
+            };
+
+            li.appendChild(deleteButton);
+            productList.appendChild(li);
+        });
+    });
+
+    // Enviar nuevo producto
+    document.getElementById('productForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const productName = document.getElementById('productName').value;
+        socket.emit('newProduct', productName);
+        document.getElementById('productName').value = '';
+    });
+</script>
